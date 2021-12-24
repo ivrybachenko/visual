@@ -18,8 +18,6 @@ class QueryService():
             col_names = [c[0] for c in sql_result.description]
             data = sql_result.fetchall()
             window_container.get_sql_result_window().put_result(col_names, data[:100])
-            # window_container.get_normality_window().put_data(col_names, data)
-            # window_container.get_scatterplot_window().put_data(col_names, data)
-            # window_container.get_heatmap_window().put_data(col_names, data)
-            window_container.get_polynom_window().put_data(col_names, data)
-            # window_container.get_kmeans_wi1ndow().put_data(col_names, data)
+            window_container.get_normality_window().put_data(col_names, data)
+            window_container.get_correlation_window().put_data(col_names, data)
+            window_container.get_forecast_window().put_data(col_names, data)

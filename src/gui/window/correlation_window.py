@@ -8,7 +8,7 @@ from src.gui.widget.MplCanvas import MplCanvas
 from src.service.service_locator import ServiceLocator
 
 
-class HeatmapWindow(QMainWindow):
+class CorrelationWindow(QMainWindow):
     def __init__(self, service_locator: ServiceLocator):
         self._service_locator = service_locator
 
