@@ -1,18 +1,15 @@
-import numpy as np
 import pandas as pd
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QMainWindow, QApplication, QGridLayout, QWidget
-from sklearn.preprocessing import PolynomialFeatures
-from sklearn.linear_model import LinearRegression
-from sklearn.pipeline import Pipeline
+from PyQt5.QtCore import Qt, pyqtSlot
+from PyQt5.QtWidgets import QMainWindow, QApplication, QGridLayout, QWidget, QComboBox, QHBoxLayout
 
-from src.gui.widget.MplCanvas import MplCanvas
+from src.gui.widget.polynom_reg import PolynomRegression
 from src.service.service_locator import ServiceLocator
 
 
 class PolynomWindow(QMainWindow):
     def __init__(self, service_locator: ServiceLocator):
         self._service_locator = service_locator
+        self.df = None
 
         QMainWindow.__init__(self)
 
@@ -26,24 +23,60 @@ class PolynomWindow(QMainWindow):
         self.setWindowTitle("Polynomial approximation")
 
         central_widget = QWidget(self)
-        self.sc = MplCanvas(self, width=5, height=4, dpi=100)
-        layout = QGridLayout(central_widget)
-        layout.addWidget(self.sc, 0, 0)
         self.setCentralWidget(central_widget)
+        layout = QGridLayout(central_widget)
+
+        control_widget = QWidget(self)
+        control_widget_layout = QHBoxLayout(control_widget)
+        self.combo1 = QComboBox()
+        self.combo1.currentIndexChanged.connect(self.on_combo1_changed)
+        control_widget_layout.addWidget(self.combo1)
+        self.combo2 = QComboBox()
+        self.combo2.currentIndexChanged.connect(self.on_combo2_changed)
+        control_widget_layout.addWidget(self.combo2)
+        self.combo3 = QComboBox()
+        self.combo3.currentIndexChanged.connect(self.on_combo3_changed)
+        self.combo3.addItems(['1', '2', '3', '4', '5'])
+        control_widget_layout.addWidget(self.combo3)
+
+        layout.addWidget(control_widget, 0, 0)
+
+        self.polynom_reg = PolynomRegression()
+        layout.addWidget(self.polynom_reg, 1, 0)
 
     def put_data(self, col_names, data):
-        df = pd.DataFrame(data, columns=col_names).select_dtypes(include='number')
-        model = Pipeline([('poly', PolynomialFeatures(degree=3)),
-                          ('linear', LinearRegression(fit_intercept=False))])
-        x = df.iloc[:, 0].values
-        y = df.iloc[:, 1].values
-        model = model.fit(x[:, np.newaxis], y)
-        coefs = model.named_steps['linear'].coef_
-        x_pred = np.sort(x)
-        vline_x = x_pred[-1]
-        x_pred = np.concatenate((x_pred, np.linspace(vline_x, vline_x + 0.2*(x_pred[-1] - x_pred[0]), 20)))
-        y_pred = np.polyval(coefs, x_pred)
-        self.sc.axes.plot(x, y, '.', x_pred, y_pred, '-r')
-        self.sc.axes.vlines(x=vline_x, ymin=np.min(np.concatenate((y, y_pred))),
-                            ymax=np.max(np.concatenate((y, y_pred))),
-                            colors='b', linestyles='dashed')
+        self.df = pd.DataFrame(data, columns=col_names).select_dtypes(include='number')
+        self.combo1.clear()
+        self.combo1.addItems(self.df.columns)
+        self.combo2.clear()
+        self.combo2.addItems(self.df.columns)
+
+    def calc_polynom_reg(self, x, y, k):
+        x = self.df[x].values
+        y = self.df[y].values
+        self.polynom_reg.put_data(x, y, k)
+
+    @pyqtSlot()
+    def on_combo1_changed(self):
+        if self.df is None:
+            return
+        if self.combo1.currentText() == '' or self.combo2.currentText() == '' or self.combo3.currentText() == '':
+            return
+        self.calc_polynom_reg(self.combo1.currentText(), self.combo2.currentText(), self.combo3.currentText())
+
+    @pyqtSlot()
+    def on_combo2_changed(self):
+        if self.df is None:
+            return
+        if self.combo1.currentText() == '' or self.combo2.currentText() == '' or self.combo3.currentText() == '':
+            return
+        self.calc_polynom_reg(self.combo1.currentText(), self.combo2.currentText(), self.combo3.currentText())
+
+    @pyqtSlot()
+    def on_combo3_changed(self):
+        if self.df is None:
+            return
+        if self.combo1.currentText() == '' or self.combo2.currentText() == '' or self.combo3.currentText() == '':
+            return
+        self.calc_polynom_reg(self.combo1.currentText(), self.combo2.currentText(), self.combo3.currentText())
+

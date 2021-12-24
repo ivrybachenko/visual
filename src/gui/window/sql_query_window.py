@@ -21,6 +21,7 @@ class SqlQueryWindow(QMainWindow):
         self.setWindowTitle("SQL Query Editor")
 
         self.textbox = QPlainTextEdit(self)
+        self.textbox.setPlainText('select * from trophallaxis;')
         self.textbox.move(20, 20)
         self.textbox.resize(width - 140, height - 40)
 

@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QApplication
 
 from src.db.init import create_schema, fill_data
 from src.gui.window.heatmap_window import HeatmapWindow
+from src.gui.window.kmeans_window import KmeansWindow
 from src.gui.window.polynom_window import PolynomWindow
 from src.gui.window.scatterplot_window import ScatterplotWindow
 from src.gui.window.main_window import MainWindow
@@ -32,9 +33,11 @@ def run_app():
     heatmap_window.hide()
     polynom_window = PolynomWindow(service_locator)
     polynom_window.hide()
+    kmeans_window = KmeansWindow(service_locator)
+    kmeans_window.hide()
     window_container = WindowContainer(main_window, sql_result_window, sql_query_window,
                                        normality_window, scatterplot_window, heatmap_window,
-                                       polynom_window)
+                                       polynom_window, kmeans_window)
     service_locator.register_service('window_container', window_container)
     service_locator.register_service('query_service', QueryService(service_locator))
     sys.exit(app.exec_())

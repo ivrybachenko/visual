@@ -1,4 +1,5 @@
 from src.gui.window.heatmap_window import HeatmapWindow
+from src.gui.window.kmeans_window import KmeansWindow
 from src.gui.window.polynom_window import PolynomWindow
 from src.gui.window.scatterplot_window import ScatterplotWindow
 from src.gui.window.main_window import MainWindow
@@ -9,7 +10,7 @@ from src.gui.window.sql_result_window import SqlResultWindow
 class WindowContainer():
     def __init__(self, main_window, sql_result_window, sql_query_window,
                  normality_window, scatterplot_window, heatmap_window,
-                 polynom_window):
+                 polynom_window, kmeans_window):
         self._main_window = main_window
         self._sql_result_window = sql_result_window
         self._sql_query_window = sql_query_window
@@ -17,6 +18,7 @@ class WindowContainer():
         self._correlation_window = scatterplot_window
         self._heatmap_window = heatmap_window
         self._polynom_window = polynom_window
+        self._kmeans_window = kmeans_window
 
     def get_main_window(self) -> MainWindow:
         return self._main_window
@@ -38,3 +40,6 @@ class WindowContainer():
 
     def get_polynom_window(self) -> PolynomWindow:
         return self._polynom_window
+
+    def get_kmeans_window(self) -> KmeansWindow:
+        return self._kmeans_window

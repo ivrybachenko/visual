@@ -67,6 +67,10 @@ Available tables:
         self.checkbox_polynom_window.setChecked(False)
         self.checkbox_polynom_window.stateChanged.connect(self.on_polynom_window_show)
         windows_widget_layout.addWidget(self.checkbox_polynom_window, 5, 1)
+        self.checkbox_kmeans_window = QCheckBox('Show KMeans window', windows_widget)
+        self.checkbox_kmeans_window.setChecked(False)
+        self.checkbox_kmeans_window.stateChanged.connect(self.on_kmeans_window_show)
+        windows_widget_layout.addWidget(self.checkbox_kmeans_window, 6, 1)
 
     def closeEvent(self, event: QtGui.QCloseEvent):
         QApplication.quit()
@@ -124,3 +128,12 @@ Available tables:
             window_container.get_polynom_window().show()
         else:
             window_container.get_polynom_window().hide()
+
+    @pyqtSlot()
+    def on_kmeans_window_show(self):
+        from src.service.window_container import WindowContainer
+        window_container: WindowContainer = self._service_locator.get_service('window_container')
+        if self.checkbox_kmeans_window.isChecked():
+            window_container.get_kmeans_window().show()
+        else:
+            window_container.get_kmeans_window().hide()
