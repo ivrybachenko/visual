@@ -2,6 +2,9 @@ from PyQt5.QtWidgets import QWidget, QGridLayout
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
+import statsmodels.api as sm
+import scipy.stats as stats
+import pandas as pd
 
 from src.gui.widget.MplCanvas import MplCanvas
 
@@ -19,4 +22,5 @@ class AtrNormality(QWidget):
         self.sc.axes = axes
         self.sc.figure = fig
         sns.histplot(data, ax=self.sc.axes[0])
-        sns.boxplot(LabelEncoder().fit_transform(data), ax=self.sc.axes[1])
+        # sns.boxplot(LabelEncoder().fit_transform(data), ax=self.sc.axes[1])
+        sm.qqplot(pd.Series(data), stats.norm, fit=True, line="45", ax=self.sc.axes[1])

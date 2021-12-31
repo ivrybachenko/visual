@@ -21,7 +21,13 @@ class SqlQueryWindow(QMainWindow):
         self.setWindowTitle("SQL Query Editor")
 
         self.textbox = QPlainTextEdit(self)
-        self.textbox.setPlainText('select * from t2m;')
+        self.textbox.setPlainText("""SELECT latitude, longitude, year, month, t2m 
+FROM t2m
+LEFT JOIN latitude ON latitude."index"=t2m."index"
+LEFT JOIN longitude ON longitude."index"=t2m."index"
+LEFT JOIN year ON year."index"=t2m."index"
+LEFT JOIN month ON month."index"=t2m."index";
+""")
         self.textbox.move(20, 20)
         self.textbox.resize(width - 140, height - 40)
 

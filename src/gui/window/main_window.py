@@ -63,6 +63,10 @@ Available tables:
         self.checkbox_polynom_window.setChecked(False)
         self.checkbox_polynom_window.stateChanged.connect(self.on_forecast_window_show)
         windows_widget_layout.addWidget(self.checkbox_polynom_window, 4, 1)
+        self.checkbox_map_window = QCheckBox('Show GeoMap window', windows_widget)
+        self.checkbox_map_window.setChecked(False)
+        self.checkbox_map_window.stateChanged.connect(self.on_map_window_show)
+        windows_widget_layout.addWidget(self.checkbox_map_window, 5, 1)
 
     def closeEvent(self, event: QtGui.QCloseEvent):
         QApplication.quit()
@@ -111,3 +115,13 @@ Available tables:
             window_container.get_forecast_window().show()
         else:
             window_container.get_forecast_window().hide()
+
+
+    @pyqtSlot()
+    def on_map_window_show(self):
+        from src.service.window_container import WindowContainer
+        window_container: WindowContainer = self._service_locator.get_service('window_container')
+        if self.checkbox_map_window.isChecked():
+            window_container.get_map_window().show()
+        else:
+            window_container.get_map_window().hide()

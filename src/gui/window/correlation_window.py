@@ -31,6 +31,6 @@ class CorrelationWindow(QMainWindow):
 
     def put_data(self, col_names, data):
         df = pd.DataFrame(data, columns=col_names).select_dtypes(include='number')
-        corr = df.corr()
+        corr = df.corr().dropna(axis=0, how='all').dropna(axis=1, how='all')
         fig, ax = plt.subplots(figsize=(10, 6))
         sns.heatmap(corr, annot=True, cmap="PiYG", ax=self.sc.axes)
