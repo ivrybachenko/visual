@@ -19,9 +19,10 @@ class TemperatureMap(QWidget):
         self.setLayout(layout)
         layout.addWidget(self.sc, 0, 0)
 
-    def put_data(self, lat0, lon0, lat, lon, t):
+    def put_data(self, lat0, lon0, lat, lon, t, title):
         fig = plt.figure()
         ax = fig.add_subplot(1, 1, 1)
+        plt.cla()
         self.sc.axes = ax
         self.sc.figure = fig
         m = Basemap(projection='lcc', resolution='c',
@@ -30,8 +31,9 @@ class TemperatureMap(QWidget):
         m.shadedrelief(scale=0.5)
         m.pcolormesh(lon, lat, t,
                      latlon=True, cmap='RdBu_r')
-        # plt.clim(-8, 8)
+        plt.clim(-50, 50)
         m.drawcoastlines(color='lightgray')
-        plt.title('Mean temperature')
-        plt.colorbar(label='temperature (°F)')
+        plt.title(title)
+        plt.colorbar(label='temperature (°C)')
         plt.show()
+        self.sc.draw()
