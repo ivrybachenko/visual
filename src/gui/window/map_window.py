@@ -1,4 +1,5 @@
 import pandas as pd
+import joblib
 from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 import numpy as np
@@ -44,45 +45,82 @@ class MapWindow(QMainWindow):
         if self.df is None:
             return
         m = self.slider.slider().value()
-        self.put_data_month(self.df, m)
+        if m > 12:
+            self.put_data_month_predicted(self.df, m % 12)
+        else:
+            self.put_data_month(self.df, m)
 
     def put_data(self, col_names, data):
         self.df = pd.DataFrame(data, columns=col_names)
-        self.df['t2m'] = self.df['t2m'].apply(lambda x: x - 273,15)
         self.put_data_month(self.df, 1)
 
 
     def put_data_month(self, df, month):
-        df = df[df['month']==month]
+        df = df[df['month'] == month]
         lon = df['longitude'].values
-        lon = np.sort(lon)
-        k_iter = lon.shape[0] // 100
-        if k_iter < 2:
-            not_rem = lon
-        else:
-            not_rem = list(range(0, len(lon), k_iter))
-        rem = [i for i in range(len(lon)) if i not in not_rem]
-        lon = np.delete(lon, rem)
-        lon_idx = {x:i for i,x in enumerate(lon)}
+        lon = self.shorten(lon)
         lat = df['latitude'].values
-        lat = np.sort(lat)
-        k_iter = lat.shape[0] // 100
-        if k_iter < 2:
-            not_rem = lat
-        else:
-            not_rem = list(range(0, len(lat), k_iter))
-        rem = [i for i in range(len(lat)) if i not in not_rem]
-        lat = np.delete(lat, rem)
-        lat_idx = {x:i for i,x in enumerate(lat)}
+        lat = self.shorten(lat)
         lon0 = np.mean(lon)
         lat0 = np.mean(lat)
+        lon_idx = {x:i for i,x in enumerate(lon)}
+        lat_idx = {x:i for i,x in enumerate(lat)}
         df = df[(df['latitude'].isin(lat)) & (df['longitude'].isin(lon))]
+        df['t2m'] = df['t2m'].apply(lambda x: x - 273.15)
         t2m = [[0 for _ in lon] for _ in lat]
         for row in df.iterrows():
             lat_ = row[1]['latitude']
             lon_ = row[1]['longitude']
             t2m[lat_idx[lat_]][lon_idx[lon_]] = row[1]['t2m']
         lon, lat = np.meshgrid(lon, lat)
+        self.tmap.put_data(lat0, lon0, lat, lon, t2m, self.get_title(month))
+
+    def put_data_month_predicted(self, df, month):
+        lon = df['longitude'].values
+        lon = self.shorten(lon)
+        lat = df['latitude'].values
+        lat = self.shorten(lat)
+        lon0 = np.mean(lon)
+        lat0 = np.mean(lat)
+        lon_idx = {x:i for i,x in enumerate(lon)}
+        lat_idx = {x:i for i,x in enumerate(lat)}
+        df = df[(df['latitude'].isin(lat)) & (df['longitude'].isin(lon))]
+        t = {}
+        for row in df.iterrows():
+            t[(row[1]['latitude'], row[1]['longitude'], row[1]['month'])] = row[1]['t2m']
+        def get_pt2m(x):
+            m = x['month']
+            pm = m - 1 if m > 1 else 12
+            return t[(x['latitude'], x['longitude'], pm)]
+        df['pt2m'] = df.apply(get_pt2m, axis=1)
+        def get_ppt2m(x):
+            m = x['month']
+            pm = m - 1 if m > 1 else 12
+            ppm = pm - 1 if pm > 1 else 12
+            return t[(x['latitude'], x['longitude'], ppm)]
+        df['ppt2m'] = df.apply(get_ppt2m, axis=1)
+        df['t2m'] = df['pt2m'] + (df['pt2m'] - df['ppt2m'])
+        df['t2m'] = df['t2m'].apply(lambda x: x - 273.15)
+        t2m = [[0 for _ in lon] for _ in lat]
+        for row in df.iterrows():
+            lat_ = row[1]['latitude']
+            lon_ = row[1]['longitude']
+            t2m[lat_idx[lat_]][lon_idx[lon_]] = row[1]['t2m']
+        lon, lat = np.meshgrid(lon, lat)
+        self.tmap.put_data(lat0, lon0, lat, lon, t2m, self.get_title(month) + ' (predicted)')
+
+    def shorten(self, arr):
+        arr = np.sort(arr)
+        k_iter = arr.shape[0] // 100
+        if k_iter < 2:
+            not_rem = arr
+        else:
+            not_rem = list(range(0, len(arr), k_iter))
+        rem = [i for i in range(len(arr)) if i not in not_rem]
+        arr = np.delete(arr, rem)
+        return arr
+
+    def get_title(self, month):
         n2m = {
             1: 'January',
             2: 'February',
@@ -101,5 +139,4 @@ class MapWindow(QMainWindow):
             15: 'March (predicted)',
         }
         title = f'Mean monthly temperature in {n2m[month]}'
-        self.tmap.put_data(lat0, lon0, lat, lon, t2m, title)
-
+        return title
