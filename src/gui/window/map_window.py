@@ -92,14 +92,14 @@ class MapWindow(QMainWindow):
             m = x['month']
             pm = m - 1 if m > 1 else 12
             return t[(x['latitude'], x['longitude'], pm)]
-        df['pt2m'] = df.apply(get_pt2m, axis=1)
         def get_ppt2m(x):
             m = x['month']
             pm = m - 1 if m > 1 else 12
             ppm = pm - 1 if pm > 1 else 12
             return t[(x['latitude'], x['longitude'], ppm)]
-        df['ppt2m'] = df.apply(get_ppt2m, axis=1)
-        df['t2m'] = df['pt2m'] + (df['pt2m'] - df['ppt2m'])
+        def get_t2m(x):
+            return 2 * get_pt2m(x) - get_ppt2m(x)
+        df['t2m'] = df.apply(get_t2m, axis=1)
         df['t2m'] = df['t2m'].apply(lambda x: x - 273.15)
         t2m = [[0 for _ in lon] for _ in lat]
         for row in df.iterrows():
